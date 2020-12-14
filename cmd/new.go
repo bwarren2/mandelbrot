@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
 	mandelbrot "github.com/bwarren2/mandelbrot/pkg/mandelbrot"
 	"github.com/spf13/cobra"
 )
@@ -31,9 +29,7 @@ var newCmd = &cobra.Command{
 It outputs in PNG, and is configurable for image size,
 range, domain, and iterations`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("#")
 		mandelbrot.Draw(filename, 900, 450, -2.5, 1, -1, 1)
-		fmt.Println("#")
 	},
 }
 
