@@ -64,7 +64,7 @@ func NewPalette(maxIterations uint8) (colors []color.Color) {
 	colorScale := Scale(0, float64(maxIterations), 0, 255)
 	for x := uint8(0); x < maxIterations; x++ {
 		value := uint8(colorScale(float64(x)))
-		colors = append(colors, color.RGBA{value, value, value, 1})
+		colors = append(colors, color.RGBA{1, value, value, 1})
 	}
 	return
 }

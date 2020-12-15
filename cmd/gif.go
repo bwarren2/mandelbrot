@@ -37,10 +37,13 @@ range, domain, and iterations`,
 		var images []*image.Paletted
 		var delays []int
 		colors := mandelbrot.NewPalette(maxIterations)
-		xMin = x - 1
-		xMax = x + 1
-		yMin = y - 1
-		yMax = y + 1
+		xShift := 1.0
+		yShift := 1.0
+		xMin = x - xShift
+		xMax = x + xShift
+		yMin = y - yShift
+		yMax = y + yShift
+
 		for frame := uint16(0); frame < frames; frame++ {
 			img := mandelbrot.Draw(width, height, maxIterations, xMin, xMax, yMin, yMax, colors)
 			bounds := img.Bounds()
@@ -48,10 +51,12 @@ range, domain, and iterations`,
 			draw.Draw(palettedImage, palettedImage.Rect, img, bounds.Min, draw.Over)
 			images = append(images, palettedImage)
 			delays = append(delays, 0)
-			xMin *= scaleIn
-			xMax *= scaleIn
-			yMin *= scaleIn
-			yMax *= scaleIn
+			xShift *= scaleIn
+			yShift *= scaleIn
+			xMin = x - xShift
+			xMax = x + xShift
+			yMin = y - yShift
+			yMax = y + yShift
 		}
 		f, _ := os.OpenFile("out.gif", os.O_WRONLY|os.O_CREATE, 0600)
 		defer f.Close()
