@@ -4,6 +4,5 @@
 # Run
 
 ```
-go build
-./mandelbrot new --filename foo.png
+go build && ./mandelbrot new --filename foo.png
 ```
