@@ -3,44 +3,52 @@ package mandelbrot_test
 import (
 	"encoding/gob"
 	"image"
+	"image/color"
+	"log"
 	"os"
 	"testing"
 
-	"github.com/go-test/deep"
-
-	"github.com/bwarren2/mandelbrot/pkg/mandelbrot"
-	mdb "github.com/bwarren2/mandelbrot/pkg/mandelbrot"
+	"github.com/bwarren2/mandelbrot"
+	"github.com/google/go-cmp/cmp"
 )
 
 // TestGif _wants_ to test creating a small mandelbrot gif, but can;t encode a sample
 func TestGif(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
-	mdb.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
-	// var want image.RGBA
-	// f, _ := os.Open("sample_gif.dat") // Is there a cleaner way to do this/
-	// defer f.Close()
-	// gob.Register(gif.GIF)
-	// enc := gob.NewEncoder(f)
-	// err := enc.Encode(got)
-	// if err != nil {
-	// 	log.Fatal("encode error:", err)
+	got := mandelbrot.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
+	f, err := os.Open("testdata/sample_gif.dat") // Is there a cleaner way to do this/
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer f.Close()
+	gob.Register(&color.RGBA{})
+	enc := gob.NewEncoder(f)
+	err = enc.Encode(got)
+	if err != nil {
+		log.Fatal("encode error:", err)
+	}
+	// if !cmp.Equal(want, got) {
+	// 	t.Error(cmp.Diff(want, got))
 	// }
 }
 
 // TestDraw tests creating a small mandelbrot image and compares to a known-good image
 func TestDraw(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
-	got := mdb.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
-	var want image.RGBA
-	f, _ := os.Open("../../test/sample.dat") // Is there a cleaner way to do this/
+	got := mandelbrot.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
+	want := &image.RGBA{}
+	f, err := os.Open("testdata/sample.dat") // Is there a cleaner way to do this/
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer f.Close()
 	dec := gob.NewDecoder(f)
-	err := dec.Decode(&want)
+	err = dec.Decode(want)
 	if err != nil {
 		t.Errorf("decode error: %v", err)
 	}
-	if diff := deep.Equal(got, &want); diff != nil { // Is there a better way to do this without deep?
-		t.Error(diff)
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
 	}
 }
 
@@ -60,7 +68,7 @@ func TestScale(t *testing.T) {
 		{"Rescale 2-1 to 3-4, 1.5->3.5", 2, 1, 3, 4, 1.5, 3.5},
 	}
 	for _, tc := range testcases {
-		fn := mdb.Scale(tc.inputMin, tc.inputMax, tc.outputMin, tc.outputMax)
+		fn := mandelbrot.Scale(tc.inputMin, tc.inputMax, tc.outputMin, tc.outputMax)
 		value := fn(tc.input)
 		if value != tc.output {
 			t.Fatalf("got %v for %v", value, tc.name)

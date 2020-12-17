@@ -73,13 +73,14 @@ func Draw(sizeX, sizeY uint16, maxIterations uint8, minX, maxX, minY, maxY float
 }
 
 // NewPalette returns a list of colors to use as a palette
-func NewPalette(maxIterations uint8) (colors []color.Color) {
+func NewPalette(maxIterations uint8) []color.Color {
+	colors := make([]color.Color, 0, maxIterations)
 	colorScale := Scale(0, float64(maxIterations), 0, 255)
 	for x := uint8(0); x < maxIterations; x++ {
 		value := uint8(colorScale(float64(x)))
 		colors = append(colors, color.RGBA{1, value, value, 1})
 	}
-	return
+	return colors
 }
 
 // WritePng writes an image to a filename
