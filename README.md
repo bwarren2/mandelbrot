@@ -1,3 +1,12 @@
+# Intro
+
+This project makes a mandelbrot image, or a gif of zooming in/out to a mandelbrot.
+
+It is a toy go project for learning.  My major learning objectives were:
+1. General go technical familiarity.
+2. Project layout
+3. Using Cobra for CLI generation
+
 # Test
 `go test ./...`
 
