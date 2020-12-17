@@ -1,7 +1,6 @@
 package mandelbrot
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"image/draw"
@@ -31,7 +30,6 @@ func Gif(sizeX, sizeY, frames uint16, maxIterations uint8, x, y, scaleIn float64
 		xShift *= scaleIn
 		yShift *= scaleIn
 		xMin, xMax, yMin, yMax = ExtentFromPoint(x, y, xShift, yShift)
-		fmt.Println(images)
 	}
 	return &gif.GIF{
 		Image: images,
