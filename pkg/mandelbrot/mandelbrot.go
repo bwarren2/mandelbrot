@@ -1,36 +1,52 @@
 package mandelbrot
 
 import (
+	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
+	"image/gif"
 	"image/png"
 	"math"
 	"os"
 	"sync"
 )
 
-// Retro is a color scheme borrowed from the internet
-var Retro = []color.Color{
-	color.RGBA{0x00, 0x04, 0x0f, 0xff},
-	color.RGBA{0x03, 0x26, 0x28, 0xff},
-	color.RGBA{0x07, 0x3e, 0x1e, 0xff},
-	color.RGBA{0x18, 0x55, 0x08, 0xff},
-	color.RGBA{0x5f, 0x6e, 0x0f, 0xff},
-	color.RGBA{0x84, 0x50, 0x19, 0xff},
-	color.RGBA{0x9b, 0x30, 0x22, 0xff},
-	color.RGBA{0xb4, 0x92, 0x2f, 0xff},
-	color.RGBA{0x94, 0xca, 0x3d, 0xff},
-	color.RGBA{0x4f, 0xd5, 0x51, 0xff},
-	color.RGBA{0x66, 0xff, 0xb3, 0xff},
-	color.RGBA{0x82, 0xc9, 0xe5, 0xff},
-	color.RGBA{0x9d, 0xa3, 0xeb, 0xff},
-	color.RGBA{0xd7, 0xb5, 0xf3, 0xff},
-	color.RGBA{0xfd, 0xd6, 0xf6, 0xff},
-	color.RGBA{0xff, 0xf0, 0xf2, 0xff},
-}
-
 // FloatFunction is a takes a float64 and returns a float64.
 type FloatFunction func(a float64) float64
+
+// Gif returns the gif containing frames and delays for a mandelbrot animation
+func Gif(sizeX, sizeY, frames uint16, maxIterations uint8, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
+	var images []*image.Paletted
+	var delays []int
+	xShift := 1.0
+	yShift := 1.0
+	xMin, xMax, yMin, yMax := ExtentFromPoint(x, y, xShift, yShift)
+	for frame := uint16(0); frame < frames; frame++ {
+		img := Draw(sizeX, sizeY, maxIterations, xMin, xMax, yMin, yMax, colors)
+		palettedImage := image.NewPaletted(img.Bounds(), colors)
+		draw.Draw(palettedImage, palettedImage.Rect, img, img.Bounds().Min, draw.Over)
+		images = append(images, palettedImage)
+		delays = append(delays, 0)
+		xShift *= scaleIn
+		yShift *= scaleIn
+		xMin, xMax, yMin, yMax = ExtentFromPoint(x, y, xShift, yShift)
+		fmt.Println(images)
+	}
+	return &gif.GIF{
+		Image: images,
+		Delay: delays,
+	}
+}
+
+// ExtentFromPoint converts an x,y point + offsets in x and y into ranges of x and y values
+func ExtentFromPoint(x, y, xShift, yShift float64) (xMin, xMax, yMin, yMax float64) {
+	xMin = x - xShift
+	xMax = x + xShift
+	yMin = y - yShift
+	yMax = y + yShift
+	return
+}
 
 // ColorRow fills in one row of Mandelbrot values for an image
 func ColorRow(img *image.RGBA, row, length uint16, xScale, yScale FloatFunction, colors []color.Color, wg *sync.WaitGroup) {
@@ -50,7 +66,6 @@ func Draw(sizeX, sizeY uint16, maxIterations uint8, minX, maxX, minY, maxY float
 	img := image.NewRGBA(image.Rect(0, 0, int(sizeX), int(sizeY)))
 	xScale := Scale(0, float64(sizeX), float64(minX), float64(maxX))
 	yScale := Scale(0, float64(sizeY), float64(minY), float64(maxY))
-
 	for i := uint16(0); i < sizeX; i++ {
 		wg.Add(1)
 		go ColorRow(img, i, sizeY, xScale, yScale, colors, &wg)
@@ -70,13 +85,14 @@ func NewPalette(maxIterations uint8) (colors []color.Color) {
 }
 
 // WritePng writes an image to a filename
+// Is there a good way to test this without deleting and recreating the file?
 func WritePng(img *image.RGBA, filename string) {
 	f, _ := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
 	defer f.Close()
 	png.Encode(f, img)
 }
 
-// EscapeIterations calculates how many iterations it takes for this point to escape Mandelbrot application
+// EscapeIterations calculates how many iterations it takes for this point to escape Mandelbrot iteration, with a cap of maxIterations
 func EscapeIterations(x0, y0 float64, maxIterations int) (iterations int) {
 	x := 0.0
 	y := 0.0
@@ -90,7 +106,7 @@ func EscapeIterations(x0, y0 float64, maxIterations int) (iterations int) {
 	return
 }
 
-// HasEscaped tells us whether a point has escaped under Mandelbrot iteration
+// HasEscaped tells us whether a point has escaped under Mandelbrot iteration, ie it has length > 2
 func HasEscaped(x, y float64) bool {
 	return math.Pow(x, 2)+math.Pow(y, 2) > 4
 }

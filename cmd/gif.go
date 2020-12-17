@@ -16,8 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"image"
-	"image/draw"
 	"image/gif"
 	"os"
 
@@ -34,46 +32,22 @@ var gifCmd = &cobra.Command{
 It outputs in PNG, and is configurable for image size,
 range, domain, and iterations`,
 	Run: func(cmd *cobra.Command, args []string) {
-		var images []*image.Paletted
-		var delays []int
 		colors := mandelbrot.NewPalette(maxIterations)
-		xShift := 1.0
-		yShift := 1.0
-		xMin = x - xShift
-		xMax = x + xShift
-		yMin = y - yShift
-		yMax = y + yShift
-
-		for frame := uint16(0); frame < frames; frame++ {
-			img := mandelbrot.Draw(width, height, maxIterations, xMin, xMax, yMin, yMax, colors)
-			bounds := img.Bounds()
-			palettedImage := image.NewPaletted(bounds, colors)
-			draw.Draw(palettedImage, palettedImage.Rect, img, bounds.Min, draw.Over)
-			images = append(images, palettedImage)
-			delays = append(delays, 0)
-			xShift *= scaleIn
-			yShift *= scaleIn
-			xMin = x - xShift
-			xMax = x + xShift
-			yMin = y - yShift
-			yMax = y + yShift
-		}
-		f, _ := os.OpenFile("out.gif", os.O_WRONLY|os.O_CREATE, 0600)
+		output := mandelbrot.Gif(width, height, frames, maxIterations, x, y, scaleIn, colors)
+		f, _ := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
 		defer f.Close()
-		gif.EncodeAll(f, &gif.GIF{
-			Image: images,
-			Delay: delays,
-		})
+		gif.EncodeAll(f, output)
 	},
 }
 
+// Should these all be in root.go?
 var filename string
 var width, height, frames uint16
 var maxIterations uint8
 var x, y, scaleIn float64
 
 func init() {
-	gifCmd.Flags().StringVarP(&filename, "filename", "f", "", "File to write to")
+	gifCmd.Flags().StringVarP(&filename, "filename", "f", "out.gif", "File to write to")
 	gifCmd.Flags().Uint16Var(&width, "width", 900, "Width of output image, in pixels")
 	gifCmd.Flags().Uint16Var(&height, "height", 450, "Height of output image, in pixels")
 	gifCmd.Flags().Uint8Var(&maxIterations, "maxIterations", 100, "Number of iterations to run the mandelbrot loop")
