@@ -11,6 +11,10 @@ import (
 	"sync"
 )
 
+type Drawer interface {
+	Draw() *image.RGBA
+}
+
 // FloatFunction is a takes a float64 and returns a float64.
 type FloatFunction func(a float64) float64
 

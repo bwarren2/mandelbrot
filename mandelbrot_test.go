@@ -27,9 +27,6 @@ func TestGif(t *testing.T) {
 	if err != nil {
 		log.Fatal("encode error:", err)
 	}
-	// if !cmp.Equal(want, got) {
-	// 	t.Error(cmp.Diff(want, got))
-	// }
 }
 
 // TestDraw tests creating a small mandelbrot image and compares to a known-good image
@@ -37,7 +34,7 @@ func TestDraw(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
 	got := mandelbrot.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
 	want := &image.RGBA{}
-	f, err := os.Open("testdata/sample.dat") // Is there a cleaner way to do this/
+	f, err := os.Open("testdata/sample.dat")
 	if err != nil {
 		t.Fatal(err)
 	}
