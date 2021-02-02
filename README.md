@@ -10,6 +10,9 @@ It is a toy go project for learning.  My major learning objectives were:
 # Test
 `go test ./...`
 
+If you are making changes and want to rewrite the golden test files, then add a flag:
+
+`go test -write-file`
 # Run
 
 ```
