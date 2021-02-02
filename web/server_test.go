@@ -86,7 +86,7 @@ func TestWebHandler(t *testing.T) {
 		if status := rr.Code; status != tc.responseCode {
 			t.Errorf("Wrong status code!  Got %v wanted %v", status, tc.responseCode)
 		}
-		if diff := cmp.Diff(spy.callArgs, []interface{}{10, 5, 10, -2.5, 1, -1, 1}); diff != "" {
+		if diff := cmp.Diff(spy.callArgs[:len(spy.callArgs)-1], []interface{}{uint16(10), uint16(5), uint8(10), -2.5, 1.0, -1.0, 1.0}); diff != "" {
 			t.Errorf("Call args mismatch (-want +got):\n%s", diff)
 		}
 	}

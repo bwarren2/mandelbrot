@@ -2,8 +2,10 @@ package mandelbrot_test
 
 import (
 	"encoding/gob"
+	"flag"
 	"image"
 	"image/color"
+	"image/gif"
 	"log"
 	"os"
 	"testing"
@@ -12,20 +14,64 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+var writeFiles = flag.Bool("write-file", false, "Write golden file")
+
+func TestMain(m *testing.M) {
+	flag.Parse()
+	if *writeFiles {
+		log.Print("Writing golden files")
+		colors := mandelbrot.NewPalette(10)
+		got := mandelbrot.MandelbrotBuilder{}.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
+		f, err := os.Create("testdata/sample_gif.dat") // Is there a cleaner way to do this/
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		gob.Register(&gif.GIF{})
+		gob.Register(color.RGBA{})
+		enc := gob.NewEncoder(f)
+		err = enc.Encode(got)
+		if err != nil {
+			panic(err)
+		}
+
+		img := mandelbrot.MandelbrotBuilder{}.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
+		imgf, err := os.Create("testdata/sample_img.dat") // Is there a cleaner way to do this/
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		gob.Register(&image.RGBA{})
+		gob.Register(color.RGBA{})
+		enc = gob.NewEncoder(imgf)
+		err = enc.Encode(img)
+		if err != nil {
+			panic(err)
+		}
+
+	}
+	m.Run()
+}
+
 // TestGif _wants_ to test creating a small mandelbrot gif, but can;t encode a sample
 func TestGif(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
 	got := mandelbrot.MandelbrotBuilder{}.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
+	want := &gif.GIF{}
 	f, err := os.Open("testdata/sample_gif.dat") // Is there a cleaner way to do this/
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer f.Close()
-	gob.Register(&color.RGBA{})
-	enc := gob.NewEncoder(f)
-	err = enc.Encode(got)
+	gob.Register(&gif.GIF{})
+	gob.Register(color.RGBA{})
+	enc := gob.NewDecoder(f)
+	err = enc.Decode(want)
 	if err != nil {
 		log.Fatal("encode error:", err)
+	}
+	if !cmp.Equal(want, got) {
+		t.Error(cmp.Diff(want, got))
 	}
 }
 
@@ -35,7 +81,7 @@ func TestDraw(t *testing.T) {
 
 	got := mandelbrot.MandelbrotBuilder{}.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
 	want := &image.RGBA{}
-	f, err := os.Open("testdata/sample.dat")
+	f, err := os.Open("testdata/sample_img.dat")
 	if err != nil {
 		t.Fatal(err)
 	}
