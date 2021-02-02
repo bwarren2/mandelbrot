@@ -12,21 +12,25 @@ import (
 )
 
 type Drawer interface {
-	Draw() *image.RGBA
+	Draw(sizeX, sizeY uint16, maxIterations uint8, minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA
+	Gif(sizeX, sizeY, frames uint16, maxIterations uint8, x, y, scaleIn float64, colors []color.Color) *gif.GIF
+}
+
+type MandelbrotBuilder struct {
 }
 
 // FloatFunction is a takes a float64 and returns a float64.
 type FloatFunction func(a float64) float64
 
 // Gif returns the gif containing frames and delays for a mandelbrot animation
-func Gif(sizeX, sizeY, frames uint16, maxIterations uint8, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
+func (m MandelbrotBuilder) Gif(sizeX, sizeY, frames uint16, maxIterations uint8, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
 	var images []*image.Paletted
 	var delays []int
 	xShift := 1.0
 	yShift := 1.0
 	xMin, xMax, yMin, yMax := ExtentFromPoint(x, y, xShift, yShift)
 	for frame := uint16(0); frame < frames; frame++ {
-		img := Draw(sizeX, sizeY, maxIterations, xMin, xMax, yMin, yMax, colors)
+		img := MandelbrotBuilder{}.Draw(sizeX, sizeY, maxIterations, xMin, xMax, yMin, yMax, colors)
 		palettedImage := image.NewPaletted(img.Bounds(), colors)
 		draw.Draw(palettedImage, palettedImage.Rect, img, img.Bounds().Min, draw.Over)
 		images = append(images, palettedImage)
@@ -63,7 +67,7 @@ func ColorRow(img *image.RGBA, row, length uint16, xScale, yScale FloatFunction,
 }
 
 // Draw draws a Mandelbrot image of a given size with a given domain and range
-func Draw(sizeX, sizeY uint16, maxIterations uint8, minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA {
+func (m MandelbrotBuilder) Draw(sizeX, sizeY uint16, maxIterations uint8, minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA {
 	var wg sync.WaitGroup
 	img := image.NewRGBA(image.Rect(0, 0, int(sizeX), int(sizeY)))
 	xScale := Scale(0, float64(sizeX), float64(minX), float64(maxX))

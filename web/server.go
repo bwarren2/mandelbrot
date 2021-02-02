@@ -55,20 +55,22 @@ func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "heartbeat")
 }
 
-func MandelPngHandler(w http.ResponseWriter, r *http.Request, drawer Drawer) {
-	colors := mandelbrot.NewPalette(10)
-	queryMap := NewDefaultMap(r.URL.Query())
-	img := drawer.Draw(
-		uint16(queryMap.GetDefaultInt("sizeX", 1000)),
-		uint16(queryMap.GetDefaultInt("sizeY", 500)),
-		uint8(queryMap.GetDefaultInt("maxIterations", 10)),
-		queryMap.GetDefaultFloat64("minX", -2.5),
-		queryMap.GetDefaultFloat64("maxX", 1),
-		queryMap.GetDefaultFloat64("minY", -1),
-		queryMap.GetDefaultFloat64("maxY", 1),
-		colors,
-	)
-	WriteImage(w, img)
+func MandelPngHandlerGenerator(drawer mandelbrot.Drawer) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		colors := mandelbrot.NewPalette(10)
+		queryMap := NewDefaultMap(r.URL.Query())
+		img := drawer.Draw(
+			uint16(queryMap.GetDefaultInt("sizeX", 1000)),
+			uint16(queryMap.GetDefaultInt("sizeY", 500)),
+			uint8(queryMap.GetDefaultInt("maxIterations", 10)),
+			queryMap.GetDefaultFloat64("minX", -2.5),
+			queryMap.GetDefaultFloat64("maxX", 1),
+			queryMap.GetDefaultFloat64("minY", -1),
+			queryMap.GetDefaultFloat64("maxY", 1),
+			colors,
+		)
+		WriteImage(w, img)
+	}
 }
 
 func WriteImage(w http.ResponseWriter, img *image.RGBA) {
@@ -85,6 +87,6 @@ func WriteImage(w http.ResponseWriter, img *image.RGBA) {
 
 func Serve(port int) {
 	http.HandleFunc("/healthcheck", HealthcheckHandler)
-	http.HandleFunc("/mandelbrot/png", MandelPngHandler)
+	http.HandleFunc("/mandelbrot/png", MandelPngHandlerGenerator(mandelbrot.MandelbrotBuilder{}))
 	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(port), nil))
 }

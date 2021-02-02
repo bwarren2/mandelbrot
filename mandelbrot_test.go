@@ -15,7 +15,7 @@ import (
 // TestGif _wants_ to test creating a small mandelbrot gif, but can;t encode a sample
 func TestGif(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
-	got := mandelbrot.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
+	got := mandelbrot.MandelbrotBuilder{}.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
 	f, err := os.Open("testdata/sample_gif.dat") // Is there a cleaner way to do this/
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +32,8 @@ func TestGif(t *testing.T) {
 // TestDraw tests creating a small mandelbrot image and compares to a known-good image
 func TestDraw(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
-	got := mandelbrot.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
+
+	got := mandelbrot.MandelbrotBuilder{}.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
 	want := &image.RGBA{}
 	f, err := os.Open("testdata/sample.dat")
 	if err != nil {
