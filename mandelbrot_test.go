@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	if *writeFiles {
 		log.Print("Writing golden files")
 		colors := mandelbrot.NewPalette(10)
-		got := mandelbrot.MandelbrotBuilder{10, 10, 3}.Gif(10, -1.5, 0, .98, colors)
+		got := mandelbrot.MandelbrotBuilder{10, 10, 10}.Gif(3, -1.5, 0, .98, colors)
 		f, err := os.Create("testdata/sample_gif.dat") // Is there a cleaner way to do this/
 		if err != nil {
 			panic(err)
