@@ -20,16 +20,25 @@ func check(err error) {
 }
 
 type DrawSpy struct {
-	callArgs []interface{}
+	callArgs      []interface{}
+	SizeX, SizeY  uint16
+	MaxIterations uint8
 }
 
-func (ds *DrawSpy) Draw(sizeX, sizeY uint16, maxIterations uint8, minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA {
-	ds.callArgs = append(ds.callArgs, sizeX, sizeY, maxIterations, minX, maxX, minY, maxY, colors)
+func (ds *DrawSpy) Draw(minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA {
+	ds.callArgs = append(ds.callArgs, minX, maxX, minY, maxY, colors)
 	return &image.RGBA{}
 }
-func (ds *DrawSpy) Gif(sizeX, sizeY, frames uint16, maxIterations uint8, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
-	ds.callArgs = append(ds.callArgs, sizeX, sizeY, frames, maxIterations, x, y, scaleIn, colors)
+func (ds *DrawSpy) Gif(frames uint16, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
+	ds.callArgs = append(ds.callArgs, frames, x, y, scaleIn, colors)
 	return &gif.GIF{}
+}
+func (ds *DrawSpy) SetSize(sizeX, sizeY uint16) {
+	ds.SizeX = sizeX
+	ds.SizeY = sizeY
+}
+func (ds *DrawSpy) SetIterations(maxIterations uint8) {
+	ds.MaxIterations = maxIterations
 }
 
 func TestWebServing(t *testing.T) {
@@ -86,7 +95,7 @@ func TestWebHandler(t *testing.T) {
 		if status := rr.Code; status != tc.responseCode {
 			t.Errorf("Wrong status code!  Got %v wanted %v", status, tc.responseCode)
 		}
-		if diff := cmp.Diff(spy.callArgs[:len(spy.callArgs)-1], []interface{}{uint16(10), uint16(5), uint8(10), -2.5, 1.0, -1.0, 1.0}); diff != "" {
+		if diff := cmp.Diff(spy.callArgs[:len(spy.callArgs)-1], []interface{}{-2.5, 1.0, -1.0, 1.0}); diff != "" {
 			t.Errorf("Call args mismatch (-want +got):\n%s", diff)
 		}
 	}

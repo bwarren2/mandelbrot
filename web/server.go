@@ -59,10 +59,9 @@ func MandelPngHandlerGenerator(drawer mandelbrot.Drawer) func(w http.ResponseWri
 	return func(w http.ResponseWriter, r *http.Request) {
 		colors := mandelbrot.NewPalette(10)
 		queryMap := NewDefaultMap(r.URL.Query())
+		drawer.SetSize(uint16(queryMap.GetDefaultInt("sizeX", 1000)), uint16(queryMap.GetDefaultInt("sizeY", 500)))
+		drawer.SetIterations(uint8(queryMap.GetDefaultInt("maxIterations", 10)))
 		img := drawer.Draw(
-			uint16(queryMap.GetDefaultInt("sizeX", 1000)),
-			uint16(queryMap.GetDefaultInt("sizeY", 500)),
-			uint8(queryMap.GetDefaultInt("maxIterations", 10)),
 			queryMap.GetDefaultFloat64("minX", -2.5),
 			queryMap.GetDefaultFloat64("maxX", 1),
 			queryMap.GetDefaultFloat64("minY", -1),
@@ -87,6 +86,6 @@ func WriteImage(w http.ResponseWriter, img *image.RGBA) {
 
 func Serve(port int) {
 	http.HandleFunc("/healthcheck", HealthcheckHandler)
-	http.HandleFunc("/mandelbrot/png", MandelPngHandlerGenerator(mandelbrot.MandelbrotBuilder{}))
+	http.HandleFunc("/mandelbrot/png", MandelPngHandlerGenerator(&mandelbrot.MandelbrotBuilder{}))
 	log.Fatal(http.ListenAndServe(":"+fmt.Sprint(port), nil))
 }

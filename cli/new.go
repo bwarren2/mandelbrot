@@ -15,7 +15,7 @@ It outputs in PNG, and is configurable for image size,
 range, domain, and iterations`,
 	Run: func(cmd *cobra.Command, args []string) {
 		colors := mandelbrot.NewPalette(maxIterations)
-		img := mandelbrot.MandelbrotBuilder{}.Draw(width, height, maxIterations, xMin, xMax, yMin, yMax, colors)
+		img := mandelbrot.MandelbrotBuilder{}.Draw(xMin, xMax, yMin, yMax, colors)
 		mandelbrot.WritePng(img, filename)
 	},
 }

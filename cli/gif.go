@@ -18,7 +18,7 @@ It outputs in PNG, and is configurable for image size,
 range, domain, and iterations`,
 	Run: func(cmd *cobra.Command, args []string) {
 		colors := mandelbrot.NewPalette(maxIterations)
-		output := mandelbrot.MandelbrotBuilder{}.Gif(width, height, frames, maxIterations, x, y, scaleIn, colors)
+		output := mandelbrot.MandelbrotBuilder{}.Gif(frames, x, y, scaleIn, colors)
 		f, _ := os.OpenFile(filename, os.O_WRONLY|os.O_CREATE, 0600)
 		defer f.Close()
 		gif.EncodeAll(f, output)

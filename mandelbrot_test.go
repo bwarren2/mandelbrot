@@ -21,7 +21,7 @@ func TestMain(m *testing.M) {
 	if *writeFiles {
 		log.Print("Writing golden files")
 		colors := mandelbrot.NewPalette(10)
-		got := mandelbrot.MandelbrotBuilder{}.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
+		got := mandelbrot.MandelbrotBuilder{10, 10, 3}.Gif(10, -1.5, 0, .98, colors)
 		f, err := os.Create("testdata/sample_gif.dat") // Is there a cleaner way to do this/
 		if err != nil {
 			panic(err)
@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 			panic(err)
 		}
 
-		img := mandelbrot.MandelbrotBuilder{}.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
+		img := mandelbrot.MandelbrotBuilder{10, 5, 10}.Draw(-2.5, 1, -1, 1, colors)
 		imgf, err := os.Create("testdata/sample_img.dat") // Is there a cleaner way to do this/
 		if err != nil {
 			panic(err)
@@ -56,7 +56,7 @@ func TestMain(m *testing.M) {
 // TestGif _wants_ to test creating a small mandelbrot gif, but can;t encode a sample
 func TestGif(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
-	got := mandelbrot.MandelbrotBuilder{}.Gif(10, 10, 3, 10, -1.5, 0, .98, colors)
+	got := mandelbrot.MandelbrotBuilder{10, 10, 10}.Gif(3, -1.5, 0, .98, colors)
 	want := &gif.GIF{}
 	f, err := os.Open("testdata/sample_gif.dat") // Is there a cleaner way to do this/
 	if err != nil {
@@ -79,7 +79,7 @@ func TestGif(t *testing.T) {
 func TestDraw(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
 
-	got := mandelbrot.MandelbrotBuilder{}.Draw(10, 5, 10, -2.5, 1, -1, 1, colors)
+	got := mandelbrot.MandelbrotBuilder{10, 5, 10}.Draw(-2.5, 1, -1, 1, colors)
 	want := &image.RGBA{}
 	f, err := os.Open("testdata/sample_img.dat")
 	if err != nil {
