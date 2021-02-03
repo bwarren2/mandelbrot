@@ -72,13 +72,20 @@ func TestWebServing(t *testing.T) {
 }
 func TestWebHandler(t *testing.T) {
 	tcs := []struct {
-		verb, url    string
-		generator    func(drawer mandelbrot.Drawer) func(w http.ResponseWriter, r *http.Request)
-		responseCode int
-		params       map[string]string
+		verb, url              string
+		generator              func(drawer mandelbrot.Drawer) func(w http.ResponseWriter, r *http.Request)
+		responseCode           int
+		params                 map[string]string
+		sizeX, sizeY           uint16
+		maxIterations          uint8
+		minX, maxX, minY, maxY float64
 	}{
 		{"GET", "mandelbrot/png", web.MandelPngHandlerGenerator, 200,
-			map[string]string{"sizeX": "10", "sizeY": "5", "maxIterations": "10", "minX": "-2.5", "maxX": "1", "minY": "-1", "maxY": "1"}},
+			map[string]string{"sizeX": "10", "sizeY": "5", "maxIterations": "10", "minX": "-2.5", "maxX": "1", "minY": "-1", "maxY": "1"},
+			10, 5, 10, -2.5, 1.0, -1, 1.0},
+		{"GET", "mandelbrot/png", web.MandelPngHandlerGenerator, 200,
+			map[string]string{"sizeX": "20", "sizeY": "10", "maxIterations": "10", "minX": "-5.0", "maxX": "2", "minY": "-2", "maxY": "2"},
+			10, 5, 10, -5, 2.0, -2.0, 2.0},
 	}
 	for _, tc := range tcs {
 		req, err := http.NewRequest(tc.verb, tc.url, nil)
@@ -95,7 +102,7 @@ func TestWebHandler(t *testing.T) {
 		if status := rr.Code; status != tc.responseCode {
 			t.Errorf("Wrong status code!  Got %v wanted %v", status, tc.responseCode)
 		}
-		if diff := cmp.Diff(spy.callArgs[:len(spy.callArgs)-1], []interface{}{-2.5, 1.0, -1.0, 1.0}); diff != "" {
+		if diff := cmp.Diff(spy.callArgs[:len(spy.callArgs)-1], []interface{}{tc.minX, tc.maxX, tc.minY, tc.maxY}); diff != "" {
 			t.Errorf("Call args mismatch (-want +got):\n%s", diff)
 		}
 	}

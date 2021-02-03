@@ -19,8 +19,10 @@ func check(err error) {
 	}
 }
 
+// DefaultMap is a string map that supports get-with-default operations
 type DefaultMap map[string]string
 
+// GetDefaultInt gets an int from the DefaultMap if it exists and is an int, otherwise returning the default
 func (d DefaultMap) GetDefaultInt(key string, otherwise int) int {
 	if v, ok := d[key]; ok {
 		value, err := strconv.ParseInt(v, 10, 64)
@@ -32,6 +34,7 @@ func (d DefaultMap) GetDefaultInt(key string, otherwise int) int {
 	return otherwise
 }
 
+// GetDefaultFloat64 gets a float from the DefaultMap if it exists and is a float, otherwise returning the default
 func (d DefaultMap) GetDefaultFloat64(key string, otherwise float64) float64 {
 	if v, ok := d[key]; ok {
 		value, err := strconv.ParseFloat(v, 64)
@@ -43,6 +46,7 @@ func (d DefaultMap) GetDefaultFloat64(key string, otherwise float64) float64 {
 	return otherwise
 }
 
+// NewDefaultMap makes a map that supports get-with-default
 func NewDefaultMap(input url.Values) DefaultMap {
 	newMap := make(DefaultMap)
 	for key, value := range input {
@@ -51,10 +55,12 @@ func NewDefaultMap(input url.Values) DefaultMap {
 	return newMap
 }
 
+// HealthcheckHandler just prints "heartbeat" to confirm the server is running
 func HealthcheckHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "heartbeat")
 }
 
+// MandelPngHandlerGenerator takes a Drawer and returns a HttpRequestHandler.  This pattern supports dependency injection for testing.
 func MandelPngHandlerGenerator(drawer mandelbrot.Drawer) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		colors := mandelbrot.NewPalette(10)
@@ -72,6 +78,7 @@ func MandelPngHandlerGenerator(drawer mandelbrot.Drawer) func(w http.ResponseWri
 	}
 }
 
+// WriteImage writes an image to a ResponseWriter and sets headers
 func WriteImage(w http.ResponseWriter, img *image.RGBA) {
 	buffer := new(bytes.Buffer)
 	if err := jpeg.Encode(buffer, img, nil); err != nil {
@@ -84,6 +91,7 @@ func WriteImage(w http.ResponseWriter, img *image.RGBA) {
 	}
 }
 
+// Serve starts a server that supports healthcheck and a mandelbrot-png endpoint
 func Serve(port int) {
 	http.HandleFunc("/healthcheck", HealthcheckHandler)
 	http.HandleFunc("/mandelbrot/png", MandelPngHandlerGenerator(&mandelbrot.MandelbrotBuilder{}))
