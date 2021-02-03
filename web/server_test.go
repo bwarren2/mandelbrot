@@ -85,7 +85,7 @@ func TestWebHandler(t *testing.T) {
 			10, 5, 10, -2.5, 1.0, -1, 1.0},
 		{"GET", "mandelbrot/png", web.MandelPngHandlerGenerator, 200,
 			map[string]string{"sizeX": "20", "sizeY": "10", "maxIterations": "10", "minX": "-5.0", "maxX": "2", "minY": "-2", "maxY": "2"},
-			10, 5, 10, -5, 2.0, -2.0, 2.0},
+			20, 10, 10, -5, 2.0, -2.0, 2.0},
 	}
 	for _, tc := range tcs {
 		req, err := http.NewRequest(tc.verb, tc.url, nil)
@@ -101,6 +101,15 @@ func TestWebHandler(t *testing.T) {
 		handler.ServeHTTP(rr, req)
 		if status := rr.Code; status != tc.responseCode {
 			t.Errorf("Wrong status code!  Got %v wanted %v", status, tc.responseCode)
+		}
+		if spy.SizeX != tc.sizeX {
+			t.Errorf("X sizes mismatch")
+		}
+		if spy.SizeY != tc.sizeY {
+			t.Errorf("Y sizes mismatch")
+		}
+		if spy.MaxIterations != tc.maxIterations {
+			t.Errorf("Iterations mismatch")
 		}
 		if diff := cmp.Diff(spy.callArgs[:len(spy.callArgs)-1], []interface{}{tc.minX, tc.maxX, tc.minY, tc.maxY}); diff != "" {
 			t.Errorf("Call args mismatch (-want +got):\n%s", diff)
