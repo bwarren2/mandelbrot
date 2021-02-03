@@ -27,6 +27,7 @@ func (bb *MandelbrotBuilder) SetSize(sizeX, sizeY uint16) {
 	bb.SizeX = sizeX
 	bb.SizeY = sizeY
 }
+
 func (bb *MandelbrotBuilder) SetIterations(maxIterations uint8) {
 	bb.MaxIterations = maxIterations
 }
@@ -35,14 +36,14 @@ func (bb *MandelbrotBuilder) SetIterations(maxIterations uint8) {
 type FloatFunction func(a float64) float64
 
 // Gif returns the gif containing frames and delays for a mandelbrot animation
-func (m MandelbrotBuilder) Gif(frames uint16, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
+func (bb MandelbrotBuilder) Gif(frames uint16, x, y, scaleIn float64, colors []color.Color) *gif.GIF {
 	var images []*image.Paletted
 	var delays []int
 	xShift := 1.0
 	yShift := 1.0
 	xMin, xMax, yMin, yMax := ExtentFromPoint(x, y, xShift, yShift)
 	for frame := uint16(0); frame < frames; frame++ {
-		img := m.Draw(xMin, xMax, yMin, yMax, colors)
+		img := bb.Draw(xMin, xMax, yMin, yMax, colors)
 		palettedImage := image.NewPaletted(img.Bounds(), colors)
 		draw.Draw(palettedImage, palettedImage.Rect, img, img.Bounds().Min, draw.Over)
 		images = append(images, palettedImage)
@@ -79,14 +80,14 @@ func ColorRow(img *image.RGBA, row, length uint16, xScale, yScale FloatFunction,
 }
 
 // Draw draws a Mandelbrot image of a given size with a given domain and range
-func (m MandelbrotBuilder) Draw(minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA {
+func (bb MandelbrotBuilder) Draw(minX, maxX, minY, maxY float64, colors []color.Color) *image.RGBA {
 	var wg sync.WaitGroup
-	img := image.NewRGBA(image.Rect(0, 0, int(m.SizeX), int(m.SizeY)))
-	xScale := Scale(0, float64(m.SizeX), float64(minX), float64(maxX))
-	yScale := Scale(0, float64(m.SizeY), float64(minY), float64(maxY))
-	for i := uint16(0); i < m.SizeX; i++ {
+	img := image.NewRGBA(image.Rect(0, 0, int(bb.SizeX), int(bb.SizeY)))
+	xScale := Scale(0, float64(bb.SizeX), float64(minX), float64(maxX))
+	yScale := Scale(0, float64(bb.SizeY), float64(minY), float64(maxY))
+	for i := uint16(0); i < bb.SizeX; i++ {
 		wg.Add(1)
-		go ColorRow(img, i, m.SizeY, xScale, yScale, colors, &wg)
+		go ColorRow(img, i, bb.SizeY, xScale, yScale, colors, &wg)
 	}
 	wg.Wait()
 	return img

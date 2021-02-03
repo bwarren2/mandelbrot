@@ -78,7 +78,6 @@ func TestGif(t *testing.T) {
 // TestDraw tests creating a small mandelbrot image and compares to a known-good image
 func TestDraw(t *testing.T) {
 	colors := mandelbrot.NewPalette(10)
-
 	got := mandelbrot.MandelbrotBuilder{10, 5, 10}.Draw(-2.5, 1, -1, 1, colors)
 	want := &image.RGBA{}
 	f, err := os.Open("testdata/sample_img.dat")
